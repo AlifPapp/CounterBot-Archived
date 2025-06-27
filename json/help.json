@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "desc_short": "Set up a channel for counting.",
+        "desc_long": "Set up a channel for counting. Make sure the @everyone role can use external emojis within that channel."
+    },
+    "disable": {
+        "desc_short": "Disable counting in a channel.",
+        "desc_long": "Disable counting in a channel. Channel return to a normal text channel."
+    },
+
+    "profile": {
+        "desc_short": "View your profile and statistics.",
+        "desc_long": "View your profile to see how many coins you have and how many fonts you own. You can also see your statistics."
+    },
+
+    "shop": {
+        "desc_short": "View items available for purchase in the store.",
+        "desc_long": "View the items available for purchase in the store using your coins."
+    },
+    "purchase": {
+        "desc_short": "Purchase fonts from the store.",
+        "desc_long": "Purchase fonts from the store to replace Discord's normal text."
+    },
+    "equip": {
+        "desc_short": "Equip a font from your collection.",
+        "desc_long": "Equip a font from your collection to replace Discord's normal text."
+    },
+    
+    "vote": {
+        "desc_short": "Links to vote for Counter in exchange for rewards!",
+        "desc_long": "Get the links to vote for Counter on bot listing websites in exchange for rewards!"
+    },
+    "botinfo": {
+        "desc_short": "View the bot's statistics and system information.",
+        "desc_long": "View the bot's statistics and system information."
+    },
+    "channel": {
+        "desc_short": "View all guild's counting channels and their settings.",
+        "desc_long": "View all guild's counting channels and their settings."
+    },
+    "leaderboard": {
+        "desc_short": "View the top users by scope and type.",
+        "desc_long": "View the top users globaly or in your guild and by total counted or coins owned."
+    },
+
+    "deletedata": {
+        "desc_short": "Delete your user data, or the current guild data.",
+        "desc_long": "Delete your user data, or the current guild data. This action is irreversible!."
+    }
+}
