@@ -119,7 +119,8 @@ async def response(slash, type, ctx, *args, **kwargs):
         if type == "reply":
             return await ctx.respond(*args, **kwargs)
         if type == "edit":
-            return await ctx.edit_original_response(*args, **kwargs)
+            #return await ctx.edit_original_response(*args, **kwargs)
+            return await ctx.edit(*args, **kwargs)
     
     if slash == False:
         #remove uncompatible **kwargs
@@ -175,47 +176,79 @@ class PageButtons(discord.ui.View):
     
     @discord.ui.button(style=discord.ButtonStyle.primary)
     async def first(self, button: discord.ui.Button, interaction: discord.Interaction):
+        # quick response (prevent timeout)
+        self.disable_all_items()
+        await interaction.response.edit_message(view=self)
+        
+        # actual response
         self.page = 1
+        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
+        
+        self.enable_all_items()
         self.children[0].disabled = True
         self.children[1].disabled = True
         self.children[2].disabled = False
         self.children[3].disabled = False
-        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
-        await interaction.response.edit_message(embed=embed, view=self)
+        
+        await response(self.slash, "edit", self.message, embed=embed, view=self)
 
     @discord.ui.button(style=discord.ButtonStyle.primary)
     async def previous(self, button: discord.ui.Button, interaction: discord.Interaction):
+        # quick response (prevent timeout)
+        self.disable_all_items()
+        await interaction.response.edit_message(view=self)
+        
+        # actual response
+        if self.page > 1:
+            self.page -= 1
+        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
+        
+        self.enable_all_items()
         self.children[2].disabled = False
         self.children[3].disabled = False
-        if self.page > 1:
-               self.page -= 1
         if self.page == 1:
             self.children[0].disabled = True
             self.children[1].disabled = True
-        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
-        await interaction.response.edit_message(embed=embed, view=self)
+            
+        await response(self.slash, "edit", self.message, embed=embed, view=self)
 
     @discord.ui.button(style=discord.ButtonStyle.primary)
     async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
-        self.children[0].disabled = False
-        self.children[1].disabled = False
+        # quick response (prevent timeout)
+        self.disable_all_items()
+        await interaction.response.edit_message(view=self)
+        
+        # actual response
         if self.page < self.maxpage:
             self.page += 1
+        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
+        
+        self.enable_all_items()
+        self.children[0].disabled = False
+        self.children[1].disabled = False
         if self.page == self.maxpage:
             self.children[2].disabled = True
             self.children[3].disabled = True
-        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
-        await interaction.response.edit_message(embed=embed, view=self)
+        
+        await response(self.slash, "edit", self.message, embed=embed, view=self)
 
     @discord.ui.button(style=discord.ButtonStyle.primary)
     async def last(self, button: discord.ui.Button, interaction: discord.Interaction):
+        # quick response (prevent timeout)
+        self.disable_all_items()
+        await interaction.response.edit_message(view=self)
+        
+        # actual response
         self.page = self.maxpage
+        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
+        
+        self.enable_all_items()
         self.children[0].disabled = False
         self.children[1].disabled = False
         self.children[2].disabled = True
         self.children[3].disabled = True
-        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
-        await interaction.response.edit_message(embed=embed, view=self)
+        
+        await response(self.slash, "edit", self.message, embed=embed, view=self)
 
     async def interaction_check(self, interaction: discord.Interaction):
         if interaction.user.id == self.ctx.author.id:
@@ -225,16 +258,24 @@ class PageButtons(discord.ui.View):
 
     async def on_timeout(self):
         self.disable_all_items()
-        #await response(self.slash, "edit", self.message, view=self)
-        await self.message.edit_original_response(view=self)
-
+        await response(self.slash, "edit", self.message, view=self)
+        
     async def start(self):
         self.children[0].emoji = self.bot.bot_emojis['double_arrow_left']
         self.children[1].emoji = self.bot.bot_emojis['arrow_left']
         self.children[2].emoji = self.bot.bot_emojis['arrow_right']
         self.children[3].emoji = self.bot.bot_emojis['double_arrow_right']
-        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
+        
+        # quick response (prevent timeout)
+        self.disable_all_items()
+        embed = discord.Embed(description=f"{self.bot.bot_emojis['spinning_cog']}", colour=self.bot.Blue)
         self.message = await response(self.slash, self.type, self.ctx, embed=embed, view=self)
+        
+        # actual response
+        self.enable_all_items()
+        embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
+        await response(self.slash, "edit", self.message, embed=embed, view=self)
+        
         
 class Dropdown(discord.ui.View):
     def __init__(self, bot, ctx, slash, type, function, placeholder, min_values, max_values, options, timeout, *args, **kwargs):

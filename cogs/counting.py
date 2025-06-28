@@ -305,6 +305,7 @@ class counting(commands.Cog):
         # see if there are any channel in database
         if len(guild_data["channels"]) == 0:
             await ctx.respond(embed=discord.Embed(description=f"{bot_emojis['danger']} There are no counting channels.", colour=self.bot.Red))
+            return
 
         # EMBED FUNCTION
         async def embed(id):
@@ -398,10 +399,10 @@ class counting(commands.Cog):
                 description += f'**[{fonts[x]["name"]}]({self.bot.website})** - [{bot_emojis["coins"]}{fonts[x]["cost"]}]({self.bot.website})'
                 description += f'\n{bot_emojis["reply"]}{preview_font(self, x)}\n'
 
-            em = discord.Embed(title=f'Shop',description=description, colour=self.bot.Blue)
+            em = discord.Embed(title=f'',description=f"# Shop\n{description}", colour=self.bot.Blue)
             em.set_footer(text=f"Page {page}/{maxpage}")
             return em
-        await PageButtons(self.bot, ctx, True, "reply", embed, page, math.ceil(len(font_ids)/8), 10, font_ids).start()
+        await PageButtons(self.bot, ctx, True, "reply", embed, page, math.ceil(len(font_ids)/8), 20, font_ids).start()
 
     @slash_command(name="purchase", description=json.load(open("./json/help.json", "r"))["purchase"]['desc_short'])
     async def purchase(self, ctx: discord.ApplicationContext, font: discord.Option(str, choices=[value["name"] for value in json.load(open("./json/fonts.json", "r")).values()])): # type: ignore
@@ -486,7 +487,7 @@ class counting(commands.Cog):
         await ctx.respond(embed=discord.Embed(title=f"Equipped {font}", description=f'{preview_font(self, fontId)}', color=self.bot.Green))
 
     @slash_command(name="leaderboard", description=json.load(open("./json/help.json", "r"))["leaderboard"]['desc_short'])
-    async def leaderboard(self, ctx: discord.ApplicationContext, scope: discord.Option(str, choices=["global", "server"]), type: discord.Option(str, choices=["counted", "coins"]), page: int = 1): # type: ignore
+    async def leaderboard(self, ctx: discord.ApplicationContext, scope: discord.Option(str, choices=["global", "guild"]), type: discord.Option(str, choices=["counted", "coins"]), page: int = 1): # type: ignore
         # Setup Vars
         cluster = self.bot.mongodb["Counting"]["User"]
         bot_emojis = self.bot.bot_emojis
@@ -496,7 +497,7 @@ class counting(commands.Cog):
         user_data = list(user_data)
 
         # sort by scope
-        if scope == "server":
+        if scope == "guild":
             user_data = list(filter(lambda x: ctx.guild.get_member(x["userId"]) is not None, user_data))
 
         # sort by type
@@ -509,23 +510,27 @@ class counting(commands.Cog):
         async def embed(page, maxpage, user_data):
             description = f""
             for x in user_data[((page*8) - 8):(page*8)]:
+                # get user
                 user = self.bot.get_user(x["userId"])
                 if user is None:
                     user = await self.bot.fetch_user(x["userId"])
+                
                 # user discriminator
                 discriminator = f'#{user.discriminator}'
                 if user.discriminator == "0":
                     discriminator = ""
+                
                 # emoji depending on type
                 emoji = bot_emojis["coins"]
                 if type == "counted":
                     emoji = ""
+                
                 description += f'`{user_data.index(x) + 1}.` **{user.name}{discriminator}** - {emoji}{x["totalCounted"]}\n'
 
             em = discord.Embed(title=f'Leaderboard',description=description, colour=self.bot.Blue)
             em.set_footer(text=f"Page {page}/{maxpage}")
             return em
-        await PageButtons(self.bot, ctx, True, "reply", embed, page, math.ceil(len(user_data)/8), 10, user_data).start()
+        await PageButtons(self.bot, ctx, True, "reply", embed, page, math.ceil(len(user_data)/8), 20, user_data).start()
 
 #####################################################################################################################################
 
