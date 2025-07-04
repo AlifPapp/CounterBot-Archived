@@ -543,26 +543,16 @@ class counting(commands.Cog):
     async def build_web_server(self):
         app = web.Application()
 
-        # mgr = topgg.WebhookManager(client).dbl_webhook(
-        #     path="/topgg", auth=self.Secrets["TopGG"])
-        # mgr.run(app)
-
-        # @mgr.listener()
-        # async def on_topgg_vote(data):
-        #     add_vote_rewards(self, int(data["user"]))
-
-        # DiscordBotList – HMAC check
+        # DiscordBotList – simple secret check, no HMAC
         async def dbl_handler(req: web.Request):
-            raw = await req.read()
-            sig = req.headers.get("x-dbl-signature", "")
-            good = hmac.compare_digest(sig, hmac.new(
-                self.Secrets["DBL"], raw, hashlib.sha1).hexdigest())
-            if not good:
+            auth_header = req.headers.get("Authorization", "")
+            if auth_header != self.Secrets["DBL"]:
                 return web.Response(status=401)
 
-            payload = json.loads(raw)
+            payload = await req.json()          # easier than manual read/loads
             if payload.get("type") == "vote":
                 add_vote_rewards(self, int(payload["user"]))
+
             return web.Response(status=204)
 
         app.router.add_post("/dbl", dbl_handler)

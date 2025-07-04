@@ -95,7 +95,7 @@ class information(commands.Cog):
 
         view = discord.ui.View()
         view.add_item(discord.ui.Button(label='top.gg', url=f'https://top.gg/bot/{self.bot.user.id}/vote', style=discord.ButtonStyle.url))
-        view.add_item(discord.ui.Button(label='discordbotlist.com', url=f'https://discord.ly/counter-2119', style=discord.ButtonStyle.url))
+        view.add_item(discord.ui.Button(label='discordbotlist.com', url=f'https://discordbotlist.com/bots/counter-2119/upvote', style=discord.ButtonStyle.url))
 
         await ctx.respond(embed=em, view=view)
     
