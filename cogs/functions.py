@@ -276,7 +276,6 @@ class PageButtons(discord.ui.View):
         embed = await self.function(self.page, self.maxpage, *self.args, **self.kwargs)
         await response(self.slash, "edit", self.message, embed=embed, view=self)
         
-        
 class Dropdown(discord.ui.View):
     def __init__(self, bot, ctx, slash, type, function, placeholder, min_values, max_values, options, timeout, *args, **kwargs):
         super().__init__(timeout=timeout)

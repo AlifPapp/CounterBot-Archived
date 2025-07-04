@@ -4,15 +4,10 @@ from discord.ext.commands import CommandNotFound
 from pymongo import MongoClient
 import os
 import json
-import hmac
-import hashlib
 import discord
-import topgg
-from aiohttp import web
 from discord.ext import commands
 from pymongo import MongoClient
 
-from .cogs.counting import add_vote_rewards
 class Bot(commands.AutoShardedBot):
     def __init__(self):
         super().__init__(command_prefix="c!",
@@ -89,37 +84,6 @@ class Bot(commands.AutoShardedBot):
     async def on_command_error(self, ctx, error):
         if isinstance(error, CommandNotFound):
             return
-
-    async def build_web_server(self):
-        app = web.Application()
-
-        # mgr = topgg.WebhookManager(client).dbl_webhook(
-        #     path="/topgg", auth=self.Secrets["TopGG"])
-        # mgr.run(app)
-
-        # @mgr.listener()
-        # async def on_topgg_vote(data):
-        #     add_vote_rewards(self, int(data["user"]))
-
-        # DiscordBotList – HMAC check
-        async def dbl_handler(req: web.Request):
-            raw = await req.read()
-            sig = req.headers.get("x-dbl-signature", "")
-            good = hmac.compare_digest(sig, hmac.new(self.Secrets["DBL"], raw, hashlib.sha1).hexdigest())
-            if not good:
-                return web.Response(status=401)
-
-            payload = json.loads(raw)
-            if payload.get("type") == "vote":
-                add_vote_rewards(self, int(payload["user"]))
-            return web.Response(status=204)
-
-        app.router.add_post("/dbl", dbl_handler)
-
-        runner = web.AppRunner(app)
-        await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", 8080)
-        await site.start()
 
     async def on_ready(self):
         print('Logged in as')
