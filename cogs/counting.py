@@ -541,15 +541,19 @@ class counting(commands.Cog):
         await PageButtons(self.bot, ctx, True, "reply", embed, page, math.ceil(len(user_data)/8), 20, user_data).start()
 
     async def build_web_server(self):
+        channel = self.get_channel(self.errors_channel)
         app = web.Application()
-
+        await channel.send(embed=discord.Embed(title="Error", description=f"app = {app}", color=self.Red))
         # DiscordBotList
         async def dbl_handler(req: web.Request):
             auth_header = req.headers.get("Authorization", "")
+            await channel.send(embed=discord.Embed(title="Error", description=f"auth_header = {auth_header}", color=self.Red))
             if auth_header != self.Secrets["DBL"]:
+                await channel.send(embed=discord.Embed(title="Error", description=f"auth_header != self.Secrets["DBL"]", color=self.Red))
                 return web.Response(status=401)
 
             payload = await req.json()
+            await channel.send(embed=discord.Embed(title="Error", description=f"payload = {payload}", color=self.Red))
             if payload.get("type") == "vote":
                 add_vote_rewards(self, int(payload["user"]))
 
@@ -559,8 +563,10 @@ class counting(commands.Cog):
 
         runner = web.AppRunner(app)
         await runner.setup()
+        await channel.send(embed=discord.Embed(title="Error", description=f"setup", color=self.Red))
         site = web.TCPSite(runner, "0.0.0.0", 8080)
         await site.start()
+        await channel.send(embed=discord.Embed(title="Error", description=f"start", color=self.Red))
 #####################################################################################################################################
 
 
