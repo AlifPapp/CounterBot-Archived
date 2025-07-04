@@ -91,11 +91,11 @@ class information(commands.Cog):
                            description="",
                            colour=self.bot.Blue)
         em.set_thumbnail(url="https://i.imgur.com/ahygnwR.png")
-        em.add_field(name="**Reward**", value=f"` - ` 100x {self.bot.bot_emojis['coins']} Coins", inline=False)
+        em.add_field(name="**Reward**", value=f"` - ` 50x {self.bot.bot_emojis['coins']} Coins", inline=False)
 
         view = discord.ui.View()
         view.add_item(discord.ui.Button(label='top.gg', url=f'https://top.gg/bot/{self.bot.user.id}/vote', style=discord.ButtonStyle.url))
-        view.add_item(discord.ui.Button(label='discordbotlist.com', url=f'discord.ly/counter-2119', style=discord.ButtonStyle.url))
+        view.add_item(discord.ui.Button(label='discordbotlist.com', url=f'https://discord.ly/counter-2119', style=discord.ButtonStyle.url))
 
         await ctx.respond(embed=em, view=view)
     

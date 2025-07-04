@@ -1,14 +1,18 @@
-import json
-import operator
-import os
-from datetime import datetime
-
 import discord
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 from pymongo import MongoClient
+import os
+import json
+import hmac
+import hashlib
+import discord
+import topgg
+from aiohttp import web
+from discord.ext import commands
+from pymongo import MongoClient
 
-
+from .cogs.counting import add_vote_rewards
 class Bot(commands.AutoShardedBot):
     def __init__(self):
         super().__init__(command_prefix="c!",
@@ -43,7 +47,8 @@ class Bot(commands.AutoShardedBot):
         # help info
         with open("./json/help.json", "r") as f:
             self.helpinfo = json.load(f)
-            self.helpinfo = dict(sorted(self.helpinfo.items(), key=lambda x: x[0]))
+            self.helpinfo = dict(
+                sorted(self.helpinfo.items(), key=lambda x: x[0]))
 
         # bot emojis
         with open("./json/emojis.json", "r") as f:
@@ -59,14 +64,15 @@ class Bot(commands.AutoShardedBot):
                 if filename != "functions.py":
                     if filename != "vote.py":
                         self.load_extension(f'cogs.{filename[:-3]}')
-    
+
     async def on_application_command_error(self, ctx, error):
         channel = self.get_channel(self.errors_channel)
         # prevent reports from testing bot
         if self.user.id == self.testbot_id:
             raise error
 
-        em = discord.Embed(title = "Error", description = f"**Command:** {ctx.command}```{error}```", color = self.Red)
+        em = discord.Embed(
+            title="Error", description=f"**Command:** {ctx.command}```{error}```", color=self.Red)
 
         if ctx.guild:
             origin = f"**Guild:** {ctx.guild.name} ` - ` **Guild id:** {ctx.guild.id}"
@@ -75,14 +81,45 @@ class Bot(commands.AutoShardedBot):
             origin = f"**Channel:** Bot's DM ` - ` **Channel id:** {ctx.channel.id}"
 
         origin += f"\n**User:** {ctx.author.mention} ` - ` **User id:** {ctx.author.id}"
-        
-        em.add_field(name = "🛰️Origin", value = f"{origin}", inline = False)
-        await channel.send(embed = em)
+
+        em.add_field(name="🛰️Origin", value=f"{origin}", inline=False)
+        await channel.send(embed=em)
         raise error
 
     async def on_command_error(self, ctx, error):
-            if isinstance(error, CommandNotFound):
-                return
+        if isinstance(error, CommandNotFound):
+            return
+
+    async def build_web_server(self):
+        app = web.Application()
+
+        # mgr = topgg.WebhookManager(client).dbl_webhook(
+        #     path="/topgg", auth=self.Secrets["TopGG"])
+        # mgr.run(app)
+
+        # @mgr.listener()
+        # async def on_topgg_vote(data):
+        #     add_vote_rewards(self, int(data["user"]))
+
+        # DiscordBotList – HMAC check
+        async def dbl_handler(req: web.Request):
+            raw = await req.read()
+            sig = req.headers.get("x-dbl-signature", "")
+            good = hmac.compare_digest(sig, hmac.new(self.Secrets["DBL"], raw, hashlib.sha1).hexdigest())
+            if not good:
+                return web.Response(status=401)
+
+            payload = json.loads(raw)
+            if payload.get("type") == "vote":
+                add_vote_rewards(self, int(payload["user"]))
+            return web.Response(status=204)
+
+        app.router.add_post("/dbl", dbl_handler)
+
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", 8080)
+        await site.start()
 
     async def on_ready(self):
         print('Logged in as')
@@ -97,6 +134,7 @@ class Bot(commands.AutoShardedBot):
 
     async def on_disconnect(self):
         print("Bot has disconnected")
+
 
 if __name__ == "__main__":
     client = Bot()

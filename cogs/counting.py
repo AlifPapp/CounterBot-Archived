@@ -588,6 +588,14 @@ def new_user_data(user_id):
                  }
     return user_data
 
+def add_vote_rewards(self, uid: int, amt: int = 50):
+        cluster_user = self.bot.mongodb["Counting"]["User"]
+        user_data = cluster_user.find_one({"userId": uid})
+        if user_data is None:
+            user_data = new_user_data(uid)
+            cluster_user.insert_one(user_data)
+        
+        cluster_user.update_one({"userId": uid}, {"$set": {"coins": user_data["coins"] + amt}})
 #####################################################################################################################################
 
 def setup(bot):
