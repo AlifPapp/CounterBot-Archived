@@ -6,7 +6,7 @@ import discord
 from discord import Member
 from discord.ext import commands
 from discord.commands import slash_command
-from aiohttp import web
+from aiohttp import ContentTypeError, web
 import hmac, hashlib
 from .functions import Dropdown, PageButtons, get_webhook, user_avatar_url
 
@@ -548,13 +548,25 @@ class counting(commands.Cog):
         
         # DiscordBotList
         async def dbl_handler(req: web.Request):
-            auth_header = req.headers.get("Authorization", "")
-            if auth_header != self.Secrets["DBL"]:
+            if req.headers.get("Authorization", "") != self.bot.Secrets["DBL"]:
                 return web.Response(status=401)
 
-            payload = await req.json()
+            try:
+                payload = await req.json()
+            except (json.JSONDecodeError, ContentTypeError):
+                return web.Response(text="Bad JSON", status=400)
+    
             user_id = int(payload["id"])
-            add_vote_rewards(self, user_id)
+            if user_id is None:
+                return web.Response(text="Missing id", status=400)
+                
+            user = self.bot.get_user(user_id)
+            if user is None: user = await self.bot.fetch_user(user_id)
+            
+            if user is None:
+                return web.Response(text="Invalid id", status=400)
+            else:
+                add_vote_rewards(self, user_id)
 
             return web.Response(status=204)
 
