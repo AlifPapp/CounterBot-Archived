@@ -549,7 +549,7 @@ class counting(commands.Cog):
             auth_header = req.headers.get("Authorization", "")
             await channel.send(embed=discord.Embed(title="Error", description=f"auth_header = {auth_header}", color=self.Red))
             if auth_header != self.Secrets["DBL"]:
-                await channel.send(embed=discord.Embed(title="Error", description=f"auth_header != self.Secrets["DBL"]", color=self.Red))
+                await channel.send(embed=discord.Embed(title="Error", description=f"auth_header != self.Secrets['DBL']", color=self.Red))
                 return web.Response(status=401)
 
             payload = await req.json()
