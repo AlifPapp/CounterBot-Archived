@@ -543,13 +543,13 @@ class counting(commands.Cog):
     async def build_web_server(self):
         app = web.Application()
 
-        # DiscordBotList – simple secret check, no HMAC
+        # DiscordBotList
         async def dbl_handler(req: web.Request):
             auth_header = req.headers.get("Authorization", "")
             if auth_header != self.Secrets["DBL"]:
                 return web.Response(status=401)
 
-            payload = await req.json()          # easier than manual read/loads
+            payload = await req.json()
             if payload.get("type") == "vote":
                 add_vote_rewards(self, int(payload["user"]))
 
