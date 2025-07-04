@@ -553,8 +553,8 @@ class counting(commands.Cog):
                 return web.Response(status=401)
 
             payload = await req.json()
-            if payload.get("type") == "vote":
-                add_vote_rewards(self, int(payload["user"]))
+            user_id = int(payload["id"])
+            add_vote_rewards(self, user_id)
 
             return web.Response(status=204)
 
@@ -564,7 +564,7 @@ class counting(commands.Cog):
         await runner.setup()
         site = web.TCPSite(runner, "0.0.0.0", 8080)
         await site.start()
-            
+        
         print("web_server Loaded!")
 #####################################################################################################################################
 
